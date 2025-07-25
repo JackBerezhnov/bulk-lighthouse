@@ -7,10 +7,15 @@ interface ResultsHistoryProps {
   refreshTrigger?: number;
 }
 
+type SortField = 'created_at' | 'first_content_paint' | 'speed_index' | 'largest_content_paint' | 'total_blocking_time' | 'time_to_interactive';
+type SortDirection = 'asc' | 'desc';
+
 export default function ResultsHistory({ refreshTrigger }: ResultsHistoryProps) {
   const [results, setResults] = useState<LighthouseResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sortField, setSortField] = useState<SortField>('created_at');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const fetchResults = async () => {
     setLoading(true);
@@ -23,7 +28,8 @@ export default function ResultsHistory({ refreshTrigger }: ResultsHistoryProps) 
       }
       
       const data = await response.json();
-      setResults(data.results);
+      const sortedResults = sortResults(data.results, sortField, sortDirection);
+      setResults(sortedResults);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -31,9 +37,37 @@ export default function ResultsHistory({ refreshTrigger }: ResultsHistoryProps) 
     }
   };
 
+  const sortResults = (data: LighthouseResult[], field: SortField, direction: SortDirection) => {
+    return [...data].sort((a, b) => {
+      let aValue: number | string | Date;
+      let bValue: number | string | Date;
+
+      if (field === 'created_at') {
+        aValue = new Date(a[field] || 0);
+        bValue = new Date(b[field] || 0);
+      } else {
+        aValue = a[field] || 0;
+        bValue = b[field] || 0;
+      }
+
+      if (aValue < bValue) return direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
+
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
+
   useEffect(() => {
     fetchResults();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, sortField, sortDirection]);
 
   if (loading && results.length === 0) {
     return (
@@ -71,13 +105,37 @@ export default function ResultsHistory({ refreshTrigger }: ResultsHistoryProps) 
           </svg>
           Recent Results ({results.length})
         </h2>
-        <button
-          onClick={fetchResults}
-          disabled={loading}
-          className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
-        >
-          {loading ? 'Refreshing...' : 'Refresh'}
-        </button>
+        <div className="flex items-center gap-2">
+          <select
+            value={`${sortField}-${sortDirection}`}
+            onChange={(e) => {
+              const [field, direction] = e.target.value.split('-') as [SortField, SortDirection];
+              setSortField(field);
+              setSortDirection(direction);
+            }}
+            className="px-2 py-1 bg-gray-700 text-white rounded text-sm border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="created_at-desc">Newest First</option>
+            <option value="created_at-asc">Oldest First</option>
+            <option value="first_content_paint-asc">Best FCP</option>
+            <option value="first_content_paint-desc">Worst FCP</option>
+            <option value="speed_index-asc">Best Speed Index</option>
+            <option value="speed_index-desc">Worst Speed Index</option>
+            <option value="largest_content_paint-asc">Best LCP</option>
+            <option value="largest_content_paint-desc">Worst LCP</option>
+            <option value="total_blocking_time-asc">Best TBT</option>
+            <option value="total_blocking_time-desc">Worst TBT</option>
+            <option value="time_to_interactive-asc">Best TTI</option>
+            <option value="time_to_interactive-desc">Worst TTI</option>
+          </select>
+          <button
+            onClick={fetchResults}
+            disabled={loading}
+            className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+          >
+            {loading ? 'Refreshing...' : 'Refresh'}
+          </button>
+        </div>
       </div>
 
       <div className="space-y-3 max-h-96 overflow-y-auto">
