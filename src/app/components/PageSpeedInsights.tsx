@@ -53,8 +53,8 @@ export default function PageSpeedInsights() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold text-center mb-8">
-        PageSpeed Insights API Demo
+      <h1 className="text-3xl font-bold text-center mb-8 text-white">
+        Bulk Lighthouse
       </h1>
 
       <form onSubmit={handleSubmit} className="mb-8">
@@ -64,13 +64,13 @@ export default function PageSpeedInsights() {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="Enter URL to test"
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             required
           />
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg"
           >
             {loading ? 'Analyzing...' : 'Analyze'}
           </button>
@@ -78,32 +78,40 @@ export default function PageSpeedInsights() {
       </form>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-          Error: {error}
+        <div className="mb-6 p-4 bg-red-900/50 border border-red-700 text-red-200 rounded-lg backdrop-blur-sm">
+          <div className="flex items-center">
+            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            Error: {error}
+          </div>
         </div>
       )}
 
       {data && (
         <div className="space-y-6">
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-lg">
-              <strong>Page tested:</strong> {data.id}
+          <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700 backdrop-blur-sm">
+            <p className="text-lg text-gray-200">
+              <strong className="text-white">Page tested:</strong> <span className="text-blue-400">{data.id}</span>
             </p>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <h2 className="text-2xl font-semibold mb-4">
+          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6 backdrop-blur-sm">
+            <h2 className="text-2xl font-semibold mb-4 text-white flex items-center">
+              <svg className="w-6 h-6 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
               Chrome User Experience Report Results
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {Object.entries(data.cruxMetrics).map(([key, value]) => (
-                <div key={key} className="p-3 bg-gray-50 rounded">
-                  <span className="font-medium">{key}:</span>{' '}
-                  <span className={`px-2 py-1 rounded text-sm ${
-                    value === 'FAST' ? 'bg-green-100 text-green-800' :
-                    value === 'AVERAGE' ? 'bg-yellow-100 text-yellow-800' :
-                    value === 'SLOW' ? 'bg-red-100 text-red-800' :
-                    'bg-gray-100 text-gray-800'
+                <div key={key} className="p-4 bg-gray-700/50 rounded-lg border border-gray-600">
+                  <span className="font-medium text-gray-300">{key}:</span>{' '}
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    value === 'FAST' ? 'bg-green-900/50 text-green-300 border border-green-700' :
+                    value === 'AVERAGE' ? 'bg-yellow-900/50 text-yellow-300 border border-yellow-700' :
+                    value === 'SLOW' ? 'bg-red-900/50 text-red-300 border border-red-700' :
+                    'bg-gray-700/50 text-gray-300 border border-gray-600'
                   }`}>
                     {value}
                   </span>
@@ -112,13 +120,18 @@ export default function PageSpeedInsights() {
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <h2 className="text-2xl font-semibold mb-4">Lighthouse Results</h2>
+          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6 backdrop-blur-sm">
+            <h2 className="text-2xl font-semibold mb-4 text-white flex items-center">
+              <svg className="w-6 h-6 mr-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Lighthouse Results
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Object.entries(data.lighthouseMetrics).map(([key, value]) => (
-                <div key={key} className="p-3 bg-gray-50 rounded">
-                  <div className="font-medium text-sm text-gray-600">{key}</div>
-                  <div className="text-lg font-semibold">{value}</div>
+                <div key={key} className="p-4 bg-gradient-to-br from-gray-700/50 to-gray-800/50 rounded-lg border border-gray-600 hover:border-gray-500 transition-colors">
+                  <div className="font-medium text-sm text-gray-400 mb-1">{key}</div>
+                  <div className="text-lg font-semibold text-white">{value}</div>
                 </div>
               ))}
             </div>
