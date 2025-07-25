@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { supabase, LighthouseResult } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,7 +32,12 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     
     // Extract the relevant metrics
-    const result = {
+    const result: {
+      id: any;
+      cruxMetrics: Record<string, string>;
+      lighthouseMetrics: Record<string, string>;
+      databaseId?: number;
+    } = {
       id: data.id,
       cruxMetrics: {
         'First Contentful Paint': data.loadingExperience?.metrics?.FIRST_CONTENTFUL_PAINT_MS?.category || 'N/A',
@@ -45,6 +51,46 @@ export async function POST(request: NextRequest) {
         'Time To Interactive': data.lighthouseResult?.audits?.['interactive']?.displayValue || 'N/A',
       }
     };
+
+    // Parse numeric values from Lighthouse metrics for database storage
+    const parseMetricValue = (value: string): number => {
+      if (!value || value === 'N/A') return 0;
+      // Remove units (s, ms) and convert to number
+      const numericValue = parseFloat(value.replace(/[^0-9.]/g, ''));
+      return isNaN(numericValue) ? 0 : numericValue;
+    };
+
+    // Prepare data for database insertion
+    const dbRecord: LighthouseResult = {
+      first_content_paint: parseMetricValue(result.lighthouseMetrics['First Contentful Paint']),
+      speed_index: parseMetricValue(result.lighthouseMetrics['Speed Index']),
+      largest_content_paint: parseMetricValue(result.lighthouseMetrics['Largest Contentful Paint']),
+      total_blocking_time: parseMetricValue(result.lighthouseMetrics['Total Blocking Time']),
+      time_to_interactive: parseMetricValue(result.lighthouseMetrics['Time To Interactive']),
+      url: targetUrl
+    };
+
+    // Save to Supabase database
+    try {
+      const { data: insertData, error: dbError } = await supabase
+        .from('lighthouse-score')
+        .insert([dbRecord])
+        .select();
+
+      if (dbError) {
+        console.error('Database error:', dbError);
+        // Continue even if DB save fails - don't break the user experience
+      } else {
+        console.log('Successfully saved to database:', insertData);
+        // Add the database ID to the result
+        if (insertData && insertData[0]) {
+          result.databaseId = insertData[0].id;
+        }
+      }
+    } catch (dbError) {
+      console.error('Database connection error:', dbError);
+      // Continue even if DB save fails
+    }
     
     return NextResponse.json(result);
   } catch (error) {
