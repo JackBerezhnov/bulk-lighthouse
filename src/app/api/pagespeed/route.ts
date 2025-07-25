@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     
     // Extract the relevant metrics
     const result: {
-      id: any;
+      id: string;
       cruxMetrics: Record<string, string>;
       lighthouseMetrics: Record<string, string>;
       databaseId?: number;
