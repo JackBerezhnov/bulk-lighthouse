@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     const apiEndpoint = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed';
-    const apiKey = process.env.PAGESPEED_API_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_PAGESPEED_API_KEY;
     
     const url = new URL(apiEndpoint);
     url.searchParams.set('url', targetUrl);
