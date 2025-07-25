@@ -65,6 +65,39 @@ export default function ResultsHistory({ refreshTrigger }: ResultsHistoryProps) 
     }
   };
 
+  // Color coding based on Core Web Vitals thresholds
+  const getMetricColor = (metric: string, value: number): string => {
+    switch (metric) {
+      case 'first_content_paint':
+        if (value <= 1.8) return 'text-green-400 bg-green-900/30 border-green-700';
+        if (value <= 3.0) return 'text-yellow-400 bg-yellow-900/30 border-yellow-700';
+        return 'text-red-400 bg-red-900/30 border-red-700';
+      
+      case 'largest_content_paint':
+        if (value <= 2.5) return 'text-green-400 bg-green-900/30 border-green-700';
+        if (value <= 4.0) return 'text-yellow-400 bg-yellow-900/30 border-yellow-700';
+        return 'text-red-400 bg-red-900/30 border-red-700';
+      
+      case 'speed_index':
+        if (value <= 3.4) return 'text-green-400 bg-green-900/30 border-green-700';
+        if (value <= 5.8) return 'text-yellow-400 bg-yellow-900/30 border-yellow-700';
+        return 'text-red-400 bg-red-900/30 border-red-700';
+      
+      case 'time_to_interactive':
+        if (value <= 3.8) return 'text-green-400 bg-green-900/30 border-green-700';
+        if (value <= 7.3) return 'text-yellow-400 bg-yellow-900/30 border-yellow-700';
+        return 'text-red-400 bg-red-900/30 border-red-700';
+      
+      case 'total_blocking_time':
+        if (value <= 200) return 'text-green-400 bg-green-900/30 border-green-700';
+        if (value <= 600) return 'text-yellow-400 bg-yellow-900/30 border-yellow-700';
+        return 'text-red-400 bg-red-900/30 border-red-700';
+      
+      default:
+        return 'text-gray-400 bg-gray-800/50 border-gray-600';
+    }
+  };
+
   useEffect(() => {
     fetchResults();
   }, [refreshTrigger, sortField, sortDirection]);
@@ -153,25 +186,25 @@ export default function ResultsHistory({ refreshTrigger }: ResultsHistoryProps) 
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
-              <div className="bg-gray-800/50 rounded p-2">
-                <div className="text-gray-400">FCP</div>
-                <div className="text-white font-semibold">{result.first_content_paint?.toFixed(1)}s</div>
+              <div className={`rounded p-2 border ${getMetricColor('first_content_paint', result.first_content_paint || 0)}`}>
+                <div className="text-gray-300">FCP</div>
+                <div className="font-semibold">{result.first_content_paint?.toFixed(1)}s</div>
               </div>
-              <div className="bg-gray-800/50 rounded p-2">
-                <div className="text-gray-400">SI</div>
-                <div className="text-white font-semibold">{result.speed_index?.toFixed(1)}s</div>
+              <div className={`rounded p-2 border ${getMetricColor('speed_index', result.speed_index || 0)}`}>
+                <div className="text-gray-300">SI</div>
+                <div className="font-semibold">{result.speed_index?.toFixed(1)}s</div>
               </div>
-              <div className="bg-gray-800/50 rounded p-2">
-                <div className="text-gray-400">LCP</div>
-                <div className="text-white font-semibold">{result.largest_content_paint?.toFixed(1)}s</div>
+              <div className={`rounded p-2 border ${getMetricColor('largest_content_paint', result.largest_content_paint || 0)}`}>
+                <div className="text-gray-300">LCP</div>
+                <div className="font-semibold">{result.largest_content_paint?.toFixed(1)}s</div>
               </div>
-              <div className="bg-gray-800/50 rounded p-2">
-                <div className="text-gray-400">TBT</div>
-                <div className="text-white font-semibold">{result.total_blocking_time?.toFixed(0)}ms</div>
+              <div className={`rounded p-2 border ${getMetricColor('total_blocking_time', result.total_blocking_time || 0)}`}>
+                <div className="text-gray-300">TBT</div>
+                <div className="font-semibold">{result.total_blocking_time?.toFixed(0)}ms</div>
               </div>
-              <div className="bg-gray-800/50 rounded p-2">
-                <div className="text-gray-400">TTI</div>
-                <div className="text-white font-semibold">{result.time_to_interactive?.toFixed(1)}s</div>
+              <div className={`rounded p-2 border ${getMetricColor('time_to_interactive', result.time_to_interactive || 0)}`}>
+                <div className="text-gray-300">TTI</div>
+                <div className="font-semibold">{result.time_to_interactive?.toFixed(1)}s</div>
               </div>
             </div>
           </div>
