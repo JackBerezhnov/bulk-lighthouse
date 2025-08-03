@@ -3,7 +3,7 @@ import { supabase, LighthouseResult } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
-    const { url: targetUrl } = await request.json();
+    const { url: targetUrl, strategy = 'desktop' } = await request.json();
     
     if (!targetUrl) {
       return NextResponse.json(
@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
     
     const url = new URL(apiEndpoint);
     url.searchParams.set('url', targetUrl);
+    url.searchParams.set('strategy', strategy.toUpperCase());
     
     // Add API key if available
     if (apiKey) {
@@ -67,7 +68,8 @@ export async function POST(request: NextRequest) {
       largest_content_paint: parseMetricValue(result.lighthouseMetrics['Largest Contentful Paint']),
       total_blocking_time: parseMetricValue(result.lighthouseMetrics['Total Blocking Time']),
       time_to_interactive: parseMetricValue(result.lighthouseMetrics['Time To Interactive']),
-      url: targetUrl
+      url: targetUrl,
+      device_strategy: strategy
     };
 
     // Save to Supabase database

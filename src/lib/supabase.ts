@@ -15,4 +15,5 @@ export interface LighthouseResult {
   total_blocking_time: number
   time_to_interactive: number
   url?: string // Adding URL field to track which site was tested
+  device_strategy?: string // Track whether test was run on desktop or mobile
 }
