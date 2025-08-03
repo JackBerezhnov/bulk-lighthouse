@@ -5,12 +5,13 @@ import { LighthouseResult } from '@/lib/supabase';
 
 interface ResultsHistoryProps {
   refreshTrigger?: number;
+  selectedWebsite?: string | null;
 }
 
 type SortField = 'created_at' | 'first_content_paint' | 'speed_index' | 'largest_content_paint' | 'total_blocking_time' | 'time_to_interactive';
 type SortDirection = 'asc' | 'desc';
 
-export default function ResultsHistory({ refreshTrigger }: ResultsHistoryProps) {
+export default function ResultsHistory({ refreshTrigger, selectedWebsite }: ResultsHistoryProps) {
   const [results, setResults] = useState<LighthouseResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,13 +23,28 @@ export default function ResultsHistory({ refreshTrigger }: ResultsHistoryProps) 
     setError(null);
 
     try {
-      const response = await fetch('/api/results?limit=20');
+      const response = await fetch('/api/results?limit=100');
       if (!response.ok) {
         throw new Error('Failed to fetch results');
       }
       
       const data = await response.json();
-      const sortedResults = sortResults(data.results, sortField, sortDirection);
+      let filteredResults = data.results;
+      
+      // Filter by selected website if specified
+      if (selectedWebsite) {
+        filteredResults = data.results.filter((result: LighthouseResult) => {
+          if (!result.url) return false;
+          try {
+            const urlObj = new URL(result.url);
+            return urlObj.hostname === selectedWebsite;
+          } catch (e) {
+            return false;
+          }
+        });
+      }
+      
+      const sortedResults = sortResults(filteredResults, sortField, sortDirection);
       setResults(sortedResults);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -100,7 +116,7 @@ export default function ResultsHistory({ refreshTrigger }: ResultsHistoryProps) 
 
   useEffect(() => {
     fetchResults();
-  }, [refreshTrigger, sortField, sortDirection]);
+  }, [refreshTrigger, sortField, sortDirection, selectedWebsite]);
 
   if (loading && results.length === 0) {
     return (
@@ -133,10 +149,10 @@ export default function ResultsHistory({ refreshTrigger }: ResultsHistoryProps) 
     <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6 backdrop-blur-sm">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-white flex items-center">
-          <svg className="w-5 h-5 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
           </svg>
-          Recent Results ({results.length})
+          {selectedWebsite ? `Results for ${selectedWebsite.replace(/^www\./, '')}` : 'Recent Results'} ({results.length})
         </h2>
         <div className="flex items-center gap-2">
           <select

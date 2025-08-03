@@ -18,13 +18,17 @@ interface PageSpeedData {
   databaseId?: number;
 }
 
-export default function PageSpeedInsights() {
+interface PageSpeedInsightsProps {
+  onNewResult?: () => void;
+  selectedWebsite?: string | null;
+}
+
+export default function PageSpeedInsights({ onNewResult, selectedWebsite }: PageSpeedInsightsProps) {
   const [url, setUrl] = useState('https://web.dev/');
   const [data, setData] = useState<PageSpeedData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +58,7 @@ export default function PageSpeedInsights() {
       if (result.databaseId) {
         setSuccessMessage(`✅ Results saved to database (ID: ${result.databaseId})`);
         // Trigger refresh of results history
-        setRefreshTrigger(prev => prev + 1);
+        onNewResult?.();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -64,10 +68,7 @@ export default function PageSpeedInsights() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold text-center mb-8 text-white">
-        Lighthouse DB
-      </h1>
+    <div className="w-full">
 
       <form onSubmit={handleSubmit} className="mb-8">
         <div className="flex gap-4">
@@ -162,10 +163,6 @@ export default function PageSpeedInsights() {
         </div>
       )}
 
-      {/* Results History Section */}
-      <div className="mt-8">
-        <ResultsHistory refreshTrigger={refreshTrigger} />
-      </div>
     </div>
   );
 }
