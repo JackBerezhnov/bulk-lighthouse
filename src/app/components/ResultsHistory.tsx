@@ -17,6 +17,7 @@ export default function ResultsHistory({ refreshTrigger, selectedWebsite }: Resu
   const [error, setError] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('created_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [strategyFilter, setStrategyFilter] = useState<'all' | 'desktop' | 'mobile'>('all');
 
   const fetchResults = async () => {
     setLoading(true);
@@ -42,6 +43,13 @@ export default function ResultsHistory({ refreshTrigger, selectedWebsite }: Resu
             return false;
           }
         });
+      }
+      
+      // Filter by strategy if specified
+      if (strategyFilter !== 'all') {
+        filteredResults = filteredResults.filter((result: LighthouseResult) => 
+          result.device_strategy === strategyFilter
+        );
       }
       
       const sortedResults = sortResults(filteredResults, sortField, sortDirection);
@@ -116,7 +124,7 @@ export default function ResultsHistory({ refreshTrigger, selectedWebsite }: Resu
 
   useEffect(() => {
     fetchResults();
-  }, [refreshTrigger, sortField, sortDirection, selectedWebsite]);
+  }, [refreshTrigger, sortField, sortDirection, selectedWebsite, strategyFilter]);
 
   if (loading && results.length === 0) {
     return (
@@ -155,6 +163,15 @@ export default function ResultsHistory({ refreshTrigger, selectedWebsite }: Resu
           {selectedWebsite ? `Results for ${selectedWebsite.replace(/^www\./, '')}` : 'Recent Results'} ({results.length})
         </h2>
         <div className="flex items-center gap-2">
+          <select
+            value={strategyFilter}
+            onChange={(e) => setStrategyFilter(e.target.value as 'all' | 'desktop' | 'mobile')}
+            className="px-2 py-1 bg-gray-700 text-white rounded text-sm border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All Devices</option>
+            <option value="desktop">🖥️ Desktop</option>
+            <option value="mobile">📱 Mobile</option>
+          </select>
           <select
             value={`${sortField}-${sortDirection}`}
             onChange={(e) => {
@@ -195,9 +212,20 @@ export default function ResultsHistory({ refreshTrigger, selectedWebsite }: Resu
                 {result.url && (
                   <p className="text-blue-400 text-sm font-medium truncate">{result.url}</p>
                 )}
-                <p className="text-gray-400 text-xs">
-                  {result.created_at ? new Date(result.created_at).toLocaleString() : 'Unknown time'}
-                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="text-gray-400 text-xs">
+                    {result.created_at ? new Date(result.created_at).toLocaleString() : 'Unknown time'}
+                  </p>
+                  {result.device_strategy && (
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      result.device_strategy === 'desktop' 
+                        ? 'bg-blue-900/50 text-blue-300 border border-blue-700' 
+                        : 'bg-purple-900/50 text-purple-300 border border-purple-700'
+                    }`}>
+                      {result.device_strategy === 'desktop' ? '🖥️ Desktop' : '📱 Mobile'}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             

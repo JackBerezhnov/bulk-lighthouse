@@ -15,6 +15,7 @@ interface PageSpeedData {
   id: string;
   cruxMetrics: CruxMetrics;
   lighthouseMetrics: LighthouseMetrics;
+  strategy: 'desktop' | 'mobile';
   databaseId?: number;
 }
 
@@ -63,7 +64,7 @@ export default function PageSpeedInsights({ onNewResult, selectedWebsite }: Page
       }
 
       const result = await response.json();
-      setData(result);
+      setData({ ...result, strategy });
       
       // Show success message if data was saved to database
       if (result.databaseId) {
@@ -206,9 +207,21 @@ export default function PageSpeedInsights({ onNewResult, selectedWebsite }: Page
       {data && (
         <div className="space-y-6">
           <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700 backdrop-blur-sm">
-            <p className="text-lg text-gray-200">
-              <strong className="text-white">Page tested:</strong> <span className="text-blue-400">{data.id}</span>
-            </p>
+            <div className="space-y-2">
+              <p className="text-lg text-gray-200">
+                <strong className="text-white">Page tested:</strong> <span className="text-blue-400">{data.id}</span>
+              </p>
+              <p className="text-sm text-gray-300">
+                <strong className="text-white">Strategy:</strong> 
+                <span className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold ${
+                  data.strategy === 'desktop' 
+                    ? 'bg-blue-900/50 text-blue-300 border border-blue-700' 
+                    : 'bg-purple-900/50 text-purple-300 border border-purple-700'
+                }`}>
+                  {data.strategy === 'desktop' ? '🖥️ Desktop' : '📱 Mobile'}
+                </span>
+              </p>
+            </div>
           </div>
 
           <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6 backdrop-blur-sm">

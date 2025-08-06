@@ -20,8 +20,6 @@ A powerful web application for running bulk PageSpeed Insights and Lighthouse au
 - **API**: Google PageSpeed Insights API
 - **Development**: ESLint, Turbopack
 
-
-   ```bash
 ## Usage
 
 ### Running a Single Test
