@@ -68,7 +68,7 @@ export default function PageSpeedInsights({ onNewResult, selectedWebsite }: Page
       
       // Show success message if data was saved to database
       if (result.databaseId) {
-        setSuccessMessage(`✅ Results saved to database (ID: ${result.databaseId})`);
+        setSuccessMessage(`✅ Results saved to database`);
         // Trigger refresh of results history
         onNewResult?.();
       }
