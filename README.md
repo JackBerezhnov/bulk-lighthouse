@@ -1,6 +1,7 @@
 # Bulk Lighthouse
 
 A powerful web application for running bulk PageSpeed Insights and Lighthouse audits on multiple websites. Built with Next.js, React, and Supabase for efficient performance testing and analysis.
+Here is the link to the live demo: https://bulk-lighthouse.vercel.app/
 
 ## Features
 
