@@ -90,6 +90,63 @@ export default function ResultsHistory({ refreshTrigger, selectedWebsite }: Resu
   };
 
   // Color coding based on Core Web Vitals thresholds
+  const exportToCSV = () => {
+    if (results.length === 0) {
+      alert('No results to export');
+      return;
+    }
+
+    // Define CSV headers
+    const headers = [
+      'ID',
+      'Created At',
+      'URL',
+      'Device Strategy',
+      'First Content Paint (s)',
+      'Speed Index (s)',
+      'Largest Content Paint (s)',
+      'Total Blocking Time (ms)',
+      'Time to Interactive (s)'
+    ];
+
+    // Convert results to CSV rows
+    const csvRows = results.map(result => [
+      result.id || '',
+      result.created_at ? new Date(result.created_at).toISOString() : '',
+      result.url || '',
+      result.device_strategy || '',
+      result.first_content_paint?.toFixed(3) || '',
+      result.speed_index?.toFixed(3) || '',
+      result.largest_content_paint?.toFixed(3) || '',
+      result.total_blocking_time?.toFixed(0) || '',
+      result.time_to_interactive?.toFixed(3) || ''
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [headers, ...csvRows]
+      .map(row => row.map(field => `"${field}"`).join(','))
+      .join('\n');
+
+    // Create and download the file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    
+    // Generate filename with current date and filters
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const websiteFilter = selectedWebsite ? `_${selectedWebsite.replace(/[^a-zA-Z0-9]/g, '_')}` : '';
+    const strategyFilter_str = strategyFilter !== 'all' ? `_${strategyFilter}` : '';
+    const filename = `lighthouse_results_${dateStr}${websiteFilter}${strategyFilter_str}.csv`;
+    
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const getMetricColor = (metric: string, value: number): string => {
     switch (metric) {
       case 'first_content_paint':
@@ -200,6 +257,14 @@ export default function ResultsHistory({ refreshTrigger, selectedWebsite }: Resu
             className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
           >
             {loading ? 'Refreshing...' : 'Refresh'}
+          </button>
+          <button
+            onClick={exportToCSV}
+            disabled={loading || results.length === 0}
+            className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            title={results.length === 0 ? 'No results to export' : 'Export results as CSV'}
+          >
+            📊 Export CSV
           </button>
         </div>
       </div>
