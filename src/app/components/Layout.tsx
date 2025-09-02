@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Sidenav from './Sidenav';
 import PageSpeedInsights from './PageSpeedInsights';
 import ResultsHistory from './ResultsHistory';
+import PerformanceChart from './PerformanceChart';
 
 export default function Layout() {
   const [selectedWebsite, setSelectedWebsite] = useState<string | null>(null);
@@ -58,6 +59,14 @@ export default function Layout() {
               onNewResult={handleNewResult}
               selectedWebsite={selectedWebsite}
             />
+
+            {/* Performance Chart */}
+            <div className="mt-8">
+              <PerformanceChart 
+                refreshTrigger={refreshTrigger}
+                selectedWebsite={selectedWebsite}
+              />
+            </div>
 
             {/* Results History */}
             <div className="mt-8">
