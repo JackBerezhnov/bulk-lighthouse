@@ -122,7 +122,18 @@ export default function PerformanceChart({ refreshTrigger, selectedWebsite }: Pe
     );
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  interface TooltipProps {
+    active?: boolean;
+    payload?: Array<{
+      color: string;
+      dataKey: string;
+      value: number;
+      payload: ChartDataPoint;
+    }>;
+    label?: string;
+  }
+
+  const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
@@ -136,7 +147,7 @@ export default function PerformanceChart({ refreshTrigger, selectedWebsite }: Pe
               {data.device_strategy === 'desktop' ? '🖥️ Desktop' : '📱 Mobile'}
             </p>
           )}
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <p key={index} style={{ color: entry.color }} className="text-sm">
               {METRIC_LABELS[entry.dataKey as keyof typeof METRIC_LABELS]}: {
                 entry.dataKey === 'total_blocking_time' 
